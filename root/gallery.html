@@ -102,7 +102,7 @@ function loadImages() {
                 if (imgSrc && (imgSrc.endsWith('.jpg') || imgSrc.endsWith('.png'))) {
                     // Extract category/tag from imgSrc (customize this based on your URL structure)
                     var category = getCategoryFromUrl(imgSrc);
-                    var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName + ' ' + category); // Add folder name and category as classes
+                    var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName).attr('onclick', 'toggleFullScreen(this)'); // Add folder name and category as classes
                     $gallery.append($img);
                 }
             }
@@ -131,6 +131,33 @@ function getCategoryFromUrl(imgSrc) {
          // Call the loadImages function to start loading images
          loadImages();
      });
+ </script>
+
+ <!--  -->
+ 
+ <div class="overlay" onclick="toggleFullScreen()"></div>
+ <div id="fullscreenImage" class="fullscreen">
+     
+     <span id="closeFullscreen" onclick="toggleFullScreen()">&times;</span> 
+ </div>
+
+ <script>
+     function toggleFullScreen(image) {
+         var fullscreenImage = document.getElementById('fullscreenImage');
+         var overlay = document.querySelector('.overlay');
+
+         if (image) {
+             
+             var imgSrc = image.src;
+             fullscreenImage.innerHTML = '<img src="' + imgSrc + '">';
+             overlay.style.display = 'block';
+             fullscreenImage.style.display = 'block';
+         } else {
+            
+             overlay.style.display = 'none';
+             fullscreenImage.style.display = 'none';
+         }
+     }
  </script>
 </body>
 </html>

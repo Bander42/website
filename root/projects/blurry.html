@@ -57,11 +57,31 @@
     </div>
 
 <!-- FullscreenClick -->
-    <script>
-      function toggleFullScreen(image) {
-          image.classList.toggle('fullscreen');
-      }
-    </script>
+    
+<div class="overlay" onclick="toggleFullScreen()"></div>
+<div id="fullscreenImage" class="fullscreen">
+    
+    <span id="closeFullscreen" onclick="toggleFullScreen()">&times;</span> 
+</div>
+
+<script>
+    function toggleFullScreen(image) {
+        var fullscreenImage = document.getElementById('fullscreenImage');
+        var overlay = document.querySelector('.overlay');
+
+        if (image) {
+            
+            var imgSrc = image.src;
+            fullscreenImage.innerHTML = '<img src="' + imgSrc + '">';
+            overlay.style.display = 'block';
+            fullscreenImage.style.display = 'block';
+        } else {
+           
+            overlay.style.display = 'none';
+            fullscreenImage.style.display = 'none';
+        }
+    }
+</script>
     
 </body>
 </html>
