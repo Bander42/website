@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Gallery</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="gallery.css">
+
+    <!-- CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js"></script>
+    <script src="https://unpkg.com/packery@2/dist/packery.pkgd.js"></script>
+    <script src="https://unpkg.com/draggabilly@3/dist/draggabilly.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
+
+    
+</head>
+<body>
+    <div class="breadcrumbs">
+        <a href="index.html" class="breadcrumb">home</a>
+        <a href="gallery.html" class="currentpage">gallery</a>
+    </div>
+
+    <!-- ISOTOPE GALLERY -->
+    <div class="filter-button-container">
+        <!-- <div class="button-group filter-button-group">
+            <button data-filter=".all" id="show-all-button">Show All</button> <br>
+            <button data-filter=".architecture">Architecture</button> <br>
+            <button data-filter=".security">Security</button> <br>
+            <button data-filter=".120">120</button> <br>
+            <button data-filter=".blackandwhite">B&W</button> <br>
+            <button data-filter=".trees">Trees</button> <br>
+            <button data-filter=".vermont">VT</button> <br> 
+             
+             Add more filter buttons for different categories 
+        </div> -->
+    </div>
+
+    <div id="gallery" class="isotope"> 
+        <!-- Your image gallery content here -->
+    </div>
+
+   <!-- ISOTOPE SCRIPT -->
+<script>
+    $(document).ready(function () {
+    var $gallery = $('#gallery');
+    var imagesToLoad = []; // An array to store image URLs
+    var currentIndex = 0; // Track the current image being loaded
+
+    // Function to load the next image
+    function loadNextImage() {
+        if (currentIndex < imagesToLoad.length) {
+            var imgSrc = imagesToLoad[currentIndex].imgSrc;
+            var folderName = imagesToLoad[currentIndex].folderName;
+            var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName); // Add folder name as a class
+            $gallery.append($img);
+
+           
+
+            // Add click event listener to make the image fullscreen
+            $img.on('click', function () {
+                toggleFullscreen($img[0]);
+            });
+        } else {
+            // All images have been loaded
+            $gallery.imagesLoaded().progress(function () {
+                $gallery.isotope({  
+                    itemSelector: '.resizable', // Use the same class name here
+                    percentPosition: true,
+                    layoutMode: 'masonry'
+                });
+            });
+        }
+    }
+
+   
+
+
+         // Filter buttons (e.g., category buttons)
+        //  $('.filter-button-group').on('click', 'button', function () {
+        //      var filterValue = $(this).attr('data-filter');
+        //      $gallery.isotope({ filter: filterValue });
+        //  });
+
+ 
+           // Load images from Google Cloud Storage
+function loadImages() {
+    // Make an AJAX request to fetch the list of files from Google Cloud Storage
+    $.ajax({
+        url: 'https://us-central1-sitefiles.cloudfunctions.net/all-thumbnails', // Replace with the appropriate Google Cloud Storage URL
+        dataType: 'json',
+        success: function (data) {
+            // Filter and populate the imagesToLoad array with image URLs and folder names
+            for (var i = 0; i < data.length; i++) {
+                var imgSrc = data[i].imgSrc; // Assuming the imgSrc property contains the image URL
+                var folderName = data[i].folderName; // Assuming folder name is available in the data
+
+                // Check if imgSrc is not blank and has a valid file extension
+                if (imgSrc && (imgSrc.endsWith('.jpg') || imgSrc.endsWith('.png'))) {
+                    // Extract category/tag from imgSrc (customize this based on your URL structure)
+                    var category = getCategoryFromUrl(imgSrc);
+                    var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName + ' ' + category); // Add folder name and category as classes
+                    $gallery.append($img);
+                }
+            }
+
+            // Start loading the images sequentially
+            loadNextImage();
+        },
+        error: function () {
+            console.error('Error fetching file list');
+        }
+    });
+}
+
+// Extract category/tag from imgSrc (customize this based on your URL structure)
+function getCategoryFromUrl(imgSrc) {
+    // Customize this logic based on your URL structure
+    // Here, we assume that category/tag is part of the URL path
+    var parts = imgSrc.split('/');
+    if (parts.length > 1) {
+        var category = parts[parts.length - 2]; // Get the second-to-last part of the URL
+        return category;
+    }
+    return '';
+}
+
+         // Call the loadImages function to start loading images
+         loadImages();
+     });
+ </script>
+</body>
+</html>
