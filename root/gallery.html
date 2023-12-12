@@ -5,18 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="stylesheet" href="/website/root/styles.css">
-    <link rel="stylesheet" href="/website/root/gallery.css">
-
     <!-- CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js"></script>
     <script src="https://unpkg.com/packery@2/dist/packery.pkgd.js"></script>
     <script src="https://unpkg.com/draggabilly@3/dist/draggabilly.pkgd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
 
-    
+    <link rel="stylesheet" href="/site/site/root/gallery.css">
+    <link rel="stylesheet" href="/site/site/root/styles.css">
+    <!-- <link rel="stylesheet" href="/website/root/styles.css">
+    <link rel="stylesheet" href="/website/root/gallery.css"> -->
 </head>
 <body>
     <div class="breadcrumbs">
@@ -25,50 +24,31 @@
     </div>
 
     <!-- ISOTOPE GALLERY -->
-    <div class="filter-button-container">
-        <!-- <div class="button-group filter-button-group">
-            <button data-filter=".all" id="show-all-button">Show All</button> <br>
-            <button data-filter=".architecture">Architecture</button> <br>
-            <button data-filter=".security">Security</button> <br>
-            <button data-filter=".120">120</button> <br>
-            <button data-filter=".blackandwhite">B&W</button> <br>
-            <button data-filter=".trees">Trees</button> <br>
-            <button data-filter=".vermont">VT</button> <br> 
-             
-             Add more filter buttons for different categories 
-        </div> -->
-    </div>
-
     <div id="gallery" class="isotope"> 
-        <!-- Your image gallery content here -->
+  
     </div>
-
+ <!-- FULLSCREEN OVERLAY -->
+ <!-- <div class="overlay" onclick="toggleFullScreen()" id="fullscreenOverlay"></div>
+ <div id="fullscreenImage" class="fullscreen">
+     <span id="closeFullscreen" onclick="toggleFullScreen()">&times;</span>
+ </div> -->
    <!-- ISOTOPE SCRIPT -->
-<script>
+    <script>
     $(document).ready(function () {
     var $gallery = $('#gallery');
-    var imagesToLoad = []; // An array to store image URLs
-    var currentIndex = 0; // Track the current image being loaded
+    var imagesToLoad = [];
+    var currentIndex = 0;
 
-    // Function to load the next image
     function loadNextImage() {
         if (currentIndex < imagesToLoad.length) {
             var imgSrc = imagesToLoad[currentIndex].imgSrc;
             var folderName = imagesToLoad[currentIndex].folderName;
-            var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName); // Add folder name as a class
+            var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName);
             $gallery.append($img);
-
-           
-
-            // Add click event listener to make the image fullscreen
-            $img.on('click', function () {
-                toggleFullscreen($img[0]);
-            });
         } else {
-            // All images have been loaded
             $gallery.imagesLoaded().progress(function () {
-                $gallery.isotope({  
-                    itemSelector: '.resizable', // Use the same class name here
+                $gallery.isotope({
+                    itemSelector: '.item',
                     percentPosition: true,
                     layoutMode: 'masonry'
                 });
@@ -76,88 +56,63 @@
         }
     }
 
-   
+    function loadImages() {
+        $.ajax({
+            url: 'https://us-central1-sitefiles.cloudfunctions.net/all-thumbnails',
+            dataType: 'json',
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    var imgSrc = data[i].imgSrc;
+                    var folderName = data[i].folderName;
 
-
-         // Filter buttons (e.g., category buttons)
-        //  $('.filter-button-group').on('click', 'button', function () {
-        //      var filterValue = $(this).attr('data-filter');
-        //      $gallery.isotope({ filter: filterValue });
-        //  });
-
- 
-           // Load images from Google Cloud Storage
-function loadImages() {
-    // Make an AJAX request to fetch the list of files from Google Cloud Storage
-    $.ajax({
-        url: 'https://us-central1-sitefiles.cloudfunctions.net/all-thumbnails', // Replace with the appropriate Google Cloud Storage URL
-        dataType: 'json',
-        success: function (data) {
-            // Filter and populate the imagesToLoad array with image URLs and folder names
-            for (var i = 0; i < data.length; i++) {
-                var imgSrc = data[i].imgSrc; // Assuming the imgSrc property contains the image URL
-                var folderName = data[i].folderName; // Assuming folder name is available in the data
-
-                // Check if imgSrc is not blank and has a valid file extension
-                if (imgSrc && (imgSrc.endsWith('.jpg') || imgSrc.endsWith('.png'))) {
-                    // Extract category/tag from imgSrc (customize this based on your URL structure)
-                    var category = getCategoryFromUrl(imgSrc);
-                    var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName).attr('onclick', 'toggleFullScreen(this)'); // Add folder name and category as classes
-                    $gallery.append($img);
+                    if (imgSrc && (imgSrc.endsWith('.jpg') || imgSrc.endsWith('.png'))) {
+                        var category = getCategoryFromUrl(imgSrc);
+                        var $img = $('<img>').attr('src', imgSrc).addClass('item resizable ' + folderName);
+                        $gallery.append($img);
+                    }
                 }
+                loadNextImage();
+            },
+            error: function () {
+                console.error('Error fetching file list');
             }
-
-            // Start loading the images sequentially
-            loadNextImage();
-        },
-        error: function () {
-            console.error('Error fetching file list');
-        }
-    });
-}
-
-// Extract category/tag from imgSrc (customize this based on your URL structure)
-function getCategoryFromUrl(imgSrc) {
-    // Customize this logic based on your URL structure
-    // Here, we assume that category/tag is part of the URL path
-    var parts = imgSrc.split('/');
-    if (parts.length > 1) {
-        var category = parts[parts.length - 2]; // Get the second-to-last part of the URL
-        return category;
+        });
     }
-    return '';
+
+    function getCategoryFromUrl(imgSrc) {
+        var parts = imgSrc.split('/');
+        if (parts.length > 1) {
+            var category = parts[parts.length - 2];
+            return category;
+        }
+        return '';
+    }
+
+    $gallery.on('click', '.resizable', function () {
+        toggleFullScreen(this);
+    });
+
+    function toggleFullScreen(image) {
+    var fullscreenImage = document.getElementById('fullscreenImage');
+    var overlay = document.getElementById('fullscreenOverlay');
+
+    if (overlay.style.display === 'block') {
+        overlay.style.display = 'none';
+        fullscreenImage.style.display = 'none';
+    } else {
+        if (image) {
+            var imgSrc = image.src;
+            fullscreenImage.innerHTML = '<img src="' + imgSrc + '">';
+            overlay.style.display = 'block';
+            fullscreenImage.style.display = 'block';
+        }
+    }
 }
 
-         // Call the loadImages function to start loading images
-         loadImages();
-     });
- </script>
+    loadImages();
+});
+    </script>
 
- <!--  -->
- 
- <div class="overlay" onclick="toggleFullScreen()"></div>
- <div id="fullscreenImage" class="fullscreen">
-     
-     <span id="closeFullscreen" onclick="toggleFullScreen()">&times;</span> 
- </div>
-
- <script>
-     function toggleFullScreen(image) {
-         var fullscreenImage = document.getElementById('fullscreenImage');
-         var overlay = document.querySelector('.overlay');
-
-         if (image) {
-             
-             var imgSrc = image.src;
-             fullscreenImage.innerHTML = '<img src="' + imgSrc + '">';
-             overlay.style.display = 'block';
-             fullscreenImage.style.display = 'block';
-         } else {
-            
-             overlay.style.display = 'none';
-             fullscreenImage.style.display = 'none';
-         }
-     }
- </script>
+   
 </body>
 </html>
